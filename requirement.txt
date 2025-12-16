@@ -1,0 +1,10 @@
+torch==2.1.2
+torchvision==0.16.2
+Pillow>=9.0.0
+opencv-python>=4.5.0
+scikit-image>=0.19.0
+pandas>=1.4.0
+numpy>=1.21.0
+scipy>=1.7.0
+scikit-learn>=1.0.0
+pytorch-grad-cam>=1.4.0
