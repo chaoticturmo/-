@@ -9,6 +9,7 @@ CheXpert-v1.0-small \
 └── valid.csv \
 数据下载链接：https://www.kaggle.com/datasets/willarevalo/chexpert-v10-small
 存放于FUCA文件夹下
+
 首先运行训练脚本，训练一个DenseNet121
 
 ```python
