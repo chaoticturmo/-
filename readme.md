@@ -12,7 +12,7 @@ CheXpert-v1.0-small \
 首先运行训练脚本，训练一个DenseNet121
 
 ```python
-python
+python Train_CheXpert.py
 ```
 
 # 可信性与偏差分析报告（DenseNet121）
