@@ -13,8 +13,11 @@ CheXpert-v1.0-small \
 # 可信性与偏差分析报告（DenseNet121）
 
 本文基于TorchXRayVision在CheXpert数据集上的权重进行了10轮微调
+
 TorchXRayVision文献链接：https://arxiv.org/abs/2111.00595
+
 TorchXRayVision代码仓库：https://github.com/mlmed/torchxrayvision
+
 ```bash
 python Train_CheXpert.py
 ```
@@ -57,7 +60,7 @@ python Task_1_Fairness_Analysis.py
 
  * **显著偏差警示：Consolidation**：模型在男性群体中的表现显著优于女性。
  * **统计数据**：男性 AUC (**0.9030**) vs. 女性 AUC (**0.8052**)。
- * **差异幅度**：。接近 0.1 的 AUC 差距表明模型极有可能在临床应用中漏诊女性患者的肺实变，存在较高的算法公平性风险。
+ * **差异幅度**：接近 0.1 的 AUC 差距表明模型极有可能在临床应用中漏诊女性患者的肺实变，存在较高的算法公平性风险。
 
 
  * **反向偏差：Pleural Effusion**
@@ -80,7 +83,7 @@ python Task_1_Fairness_Analysis.py
  **高风险发现：Edema 的代际断层**
 * 模型在青年群体中表现出近乎完美的分类能力，但在老年群体中性能急剧下降。
  **统计数据**：青年 AUC (**0.9762**) vs. 老年 AUC (**0.7847**)。
- **差异幅度**：。这一巨大的性能鸿沟暗示模型未能有效应对老年患者更为复杂的肺部背景（如基础疾病干扰），导致在最高危群体（老年人）中可靠性最低。
+ **差异幅度**：这一巨大的性能鸿沟暗示模型未能有效应对老年患者更为复杂的肺部背景（如基础疾病干扰），导致在最高危群体（老年人）中可靠性最低。
 
 
  **F1 分数的阈值敏感性**
