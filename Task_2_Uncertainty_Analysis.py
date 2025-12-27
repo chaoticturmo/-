@@ -21,7 +21,6 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 warnings.filterwarnings('ignore')
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# --- 1. 全局配置 ---
 DATA_DIR = 'CheXpert-v1.0-small' 
 VALID_CSV = os.path.join(DATA_DIR, 'valid.csv') 
 
@@ -32,7 +31,6 @@ CORE_CLASSES = [
     'Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis', 'Pleural Effusion'
 ]
 
-# --- 2. Dataset 类 (修复路径逻辑) ---
 class CheXpertDataset(Dataset):
     def __init__(self, csv_file, data_dir):
         self.df = pd.read_csv(csv_file)
@@ -46,8 +44,6 @@ class CheXpertDataset(Dataset):
         self.data_dir = data_dir
         self.raw_paths = []
         
-        # --- [关键修复] 强制拼接逻辑 ---
-        # 不再进行智能判断，直接强制拼接，以适配您的双层目录结构
         print(f"正在构建数据集路径... (Data Dir: {self.data_dir})")
         for p in self.df['Path']:
             full_path = os.path.join(self.data_dir, p)
@@ -55,7 +51,6 @@ class CheXpertDataset(Dataset):
 
         if len(self.raw_paths) > 0:
             print(f"路径示例 (应为双层): {self.raw_paths[0]}")
-            # 立即检查第一张图是否存在，如果不存在直接报错，别等到训练时
             if not os.path.exists(self.raw_paths[0]):
                 print(f"!!! 严重警告: 找不到文件 {self.raw_paths[0]}")
                 print("请检查 DATA_DIR 是否需要改为 'CheXpert-v1.0-small/CheXpert-v1.0-small' ?")
@@ -70,12 +65,9 @@ class CheXpertDataset(Dataset):
             image_pil = Image.open(img_path).convert('L') 
             img = np.array(image_pil)
         except Exception as e:
-            # 如果读不到，打印出来，不要默默返回黑图
             print(f"[Error] 无法读取图片: {img_path}")
-            # 只有万不得已才返回黑图
             img = np.zeros((224, 224), dtype=np.uint8)
 
-        # XRV 预处理
         img = xrv.datasets.normalize(img, 255) 
         if len(img.shape) > 2: img = img.mean(2) 
         img = img[None, ...] 
@@ -84,7 +76,6 @@ class CheXpertDataset(Dataset):
 
         image_tensor = torch.from_numpy(img).float()
         
-        # 可视化图
         vis_img = (img.squeeze() + 1024) / 2048
         vis_img = np.clip(vis_img, 0, 1)
         vis_img = np.stack([vis_img]*3, axis=2) 
@@ -94,7 +85,6 @@ class CheXpertDataset(Dataset):
         labels = self.df.iloc[idx][CORE_CLASSES].values.astype(np.float32)
         return image_tensor, torch.from_numpy(labels), vis_image_tensor, idx
 
-# --- 3. 加载数据与模型 ---
 try:
     valid_dataset = CheXpertDataset(VALID_CSV, DATA_DIR)
     valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False)
@@ -108,7 +98,6 @@ for param in model.parameters():
     param.requires_grad = True
 model.eval()
 
-# --- 4. 调试：再次检查数据范围 ---
 print("\n[Sanity Check] 检查模型输入数据分布...")
 first_batch, _, _, _ = next(iter(valid_loader))
 print(f"Min Value: {first_batch.min().item():.2f} (应接近 -1024)")
@@ -120,7 +109,6 @@ else:
     print("数据范围正常，继续分析...")
 print("-" * 30)
 
-# --- 5. Grad-CAM 配置 ---
 target_layers = [model.features[-1]] 
 LABEL_MAPPING = {
     'Pleural Effusion': 'Effusion',
@@ -143,7 +131,6 @@ else:
 print(f"分析目标: '{TARGET_CLASS_NAME}' (Mapped to '{search_name}', Index: {TARGET_CLASS_IDX})")
 cam = GradCAM(model=model, target_layers=target_layers)
 
-# --- 6. 主循环 ---
 print(f"开始分析... (Batch Size: {BATCH_SIZE})")
 
 all_uncertainties = []
@@ -174,7 +161,6 @@ for (images, _, vis_images, batch_indices) in valid_loader:
         print(f"  已处理 {count} / {len(valid_dataset)} 样本...")
         torch.cuda.empty_cache()
 
-# --- 7. 统计与绘图 ---
 all_uncertainties = np.array(all_uncertainties)
 all_dispersions = np.array(all_dispersions)
 
@@ -202,7 +188,6 @@ print(f"   皮尔逊 (Pearson): {corr_p:.4f} (p={p_val_p:.4f})")
 print(f"   斯皮尔曼 (Spearman): {corr_s:.4f} (p={p_val_s:.4f})")
 print("====================================")
 
-# 绘图
 plt.figure(figsize=(10, 6))
 sns.histplot(uncertainties_clean, bins=30, kde=True, color='skyblue', edgecolor='black')
 plt.axvline(mean_entropy, color='red', linestyle='dashed', linewidth=2, label=f'Mean: {mean_entropy:.3f}')
@@ -217,7 +202,6 @@ plt.title(f'Distribution of Heatmap Variance - {TARGET_CLASS_NAME}')
 plt.savefig('task2_variance_distribution.png', dpi=300, bbox_inches='tight')
 plt.close()
 
-# Top-5 可视化
 top_k_indices = np.argsort(all_uncertainties)[-5:]
 montage_images = []
 
