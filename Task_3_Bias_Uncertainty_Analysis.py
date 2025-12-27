@@ -13,7 +13,6 @@ import time
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 引入 torchxrayvision 和 skimage
 import torchxrayvision as xrv
 from skimage.metrics import structural_similarity as ssim
 
@@ -23,7 +22,6 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 warnings.filterwarnings('ignore')
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# --- 1. 配置 ---
 DATA_DIR = 'CheXpert-v1.0-small'
 VALID_CSV = os.path.join(DATA_DIR, 'valid.csv')
 MODEL_PATH = 'chexpert_finetuned_xrv.pth' 
@@ -31,13 +29,12 @@ MODEL_PATH = 'chexpert_finetuned_xrv.pth'
 BATCH_SIZE = 1 
 MC_PASSES = 10 
 TARGET_CLASS_NAME = 'Cardiomegaly' 
-INPUT_NOISE_SCALE = 0.02  # [新增] 输入噪声强度，防止 Grad-CAM 完全静止
+INPUT_NOISE_SCALE = 0.02
 
 CORE_CLASSES = [
     'Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis', 'Pleural Effusion'
 ]
 
-# --- 2. Dataset 类 ---
 class CheXpertDataset(Dataset):
     def __init__(self, csv_file, data_dir):
         self.df = pd.read_csv(csv_file)
@@ -73,7 +70,6 @@ class CheXpertDataset(Dataset):
         labels = self.df.iloc[idx][CORE_CLASSES].values.astype(np.float32)
         return image_tensor, torch.from_numpy(labels), idx
 
-# --- 3. 加载数据 ---
 try:
     valid_dataset = CheXpertDataset(VALID_CSV, DATA_DIR)
     valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False)
@@ -81,7 +77,6 @@ except Exception as e:
     print(f"数据加载失败: {e}")
     exit()
 
-# --- 4. 加载模型 ---
 print("正在加载模型...")
 model = xrv.models.DenseNet(weights="densenet121-res224-chex") 
 model.op_threshs = None 
@@ -94,7 +89,6 @@ if MODEL_PATH and os.path.exists(MODEL_PATH):
     model.load_state_dict(state_dict)
 model = model.to(DEVICE)
 
-# 目标索引
 if TARGET_CLASS_NAME in CORE_CLASSES:
     TARGET_CLASS_IDX = CORE_CLASSES.index(TARGET_CLASS_NAME)
     print(f"分析目标: {TARGET_CLASS_NAME} (Index: {TARGET_CLASS_IDX})")
@@ -105,14 +99,10 @@ target_layers = [model.features[-1]]
 cam = GradCAM(model=model, target_layers=target_layers)
 targets_for_cam = [ClassifierOutputTarget(TARGET_CLASS_IDX)]
 
-# [新增] 辅助函数：强制开启 Dropout
 def enable_dropout(m):
     if type(m) == nn.Dropout:
         m.train()
 
-# ==========================================
-# Part A: 偏差与不确定性分析 (Uncertainty)
-# ==========================================
 print("\n--- Part A: 计算基准不确定性 (Entropy) ---")
 all_uncertainties = []
 all_indices = []
@@ -133,16 +123,12 @@ with torch.no_grad():
 uncertainty_map = dict(zip(all_indices, all_uncertainties))
 uncertainty_array = np.array([uncertainty_map[i] for i in range(len(valid_dataset))])
 
-# ==========================================
-# Part B: 解释一致性分析 (Improved)
-# ==========================================
 print("\n--- Part B: 计算解释一致性 (Input Noise + SSIM) ---")
 print(f"策略: MC Passes={MC_PASSES}, Input Noise Scale={INPUT_NOISE_SCALE}")
 
 all_consistency_scores = []
 start_time = time.time()
 
-# 开启 Dropout（如果模型里有的话）
 model.apply(enable_dropout)
 
 for i, (images, _, _) in enumerate(valid_loader):
@@ -152,8 +138,6 @@ for i, (images, _, _) in enumerate(valid_loader):
     for _ in range(MC_PASSES):
         model.zero_grad()
         
-        # [关键改进] 添加微小噪声，强制模型产生变化
-        # 如果模型参数没变化，输入的变化也能测试“敏感性一致性”
         noise = torch.randn_like(images) * INPUT_NOISE_SCALE
         noisy_images = images + noise
         
@@ -163,7 +147,7 @@ for i, (images, _, _) in enumerate(valid_loader):
     ssim_scores = []
     for h1, h2 in combinations(mc_heatmaps, 2):
         d_range = h1.max() - h1.min()
-        if d_range == 0: d_range = 1e-5 # 防止除零
+        if d_range == 0: d_range = 1e-5
         score = ssim(h1, h2, data_range=d_range)
         ssim_scores.append(score)
     
@@ -178,17 +162,12 @@ for i, (images, _, _) in enumerate(valid_loader):
 model.eval()
 all_consistency_scores = np.array(all_consistency_scores)
 
-# ==========================================
-# Part C: 鲁棒相关性分析
-# ==========================================
 print("\n--- Part C: 结果统计与相关性 ---")
 
-# 清洗 NaN
 mask = ~np.isnan(uncertainty_array) & ~np.isnan(all_consistency_scores)
 u_clean = uncertainty_array[mask]
 c_clean = all_consistency_scores[mask]
 
-# [关键改进] 检查方差，防止 NaN
 u_std = np.std(u_clean)
 c_std = np.std(c_clean)
 
@@ -197,7 +176,6 @@ print(f"一致性 Std:   {c_std:.4f}")
 
 if u_std < 1e-6 or c_std < 1e-6:
     print("警告: 某一变量方差极低，直接计算相关性可能得到 NaN。")
-    # 添加极其微小的抖动以允许计算（仅用于避免程序报错，不影响趋势）
     if c_std < 1e-6: c_clean += np.random.normal(0, 1e-6, size=c_clean.shape)
 
 corr_p, p_val_p = pearsonr(u_clean, c_clean)
@@ -208,10 +186,8 @@ print(f"样本数: {len(u_clean)}")
 print(f"  皮尔逊 (Pearson): {corr_p:.4f} (p={p_val_p:.4f})")
 print(f"  斯皮尔曼 (Spearman): {corr_s:.4f} (p={p_val_s:.4f})")
 
-# 绘图
 plt.figure(figsize=(8, 6))
 sns.scatterplot(x=u_clean, y=c_clean, alpha=0.6, color='blue')
-# 只有当相关性有效时才画回归线
 if not np.isnan(corr_p):
     sns.regplot(x=u_clean, y=c_clean, scatter=False, color='red')
 plt.title(f'Uncertainty vs Consistency (with Input Noise)\n{TARGET_CLASS_NAME}')
