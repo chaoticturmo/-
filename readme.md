@@ -13,6 +13,8 @@ CheXpert-v1.0-small \
 # 可信性与偏差分析报告（DenseNet121）
 
 本文基于TorchXRayVision在CheXpert数据集上的权重进行了10轮微调
+TorchXRayVision文献链接：https://arxiv.org/abs/2111.00595
+TorchXRayVision代码仓库：https://github.com/mlmed/torchxrayvision
 ```bash
 python Train_CheXpert.py
 ```
