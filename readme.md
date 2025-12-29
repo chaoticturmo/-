@@ -12,20 +12,18 @@ CheXpert-v1.0-small \
 
 # 可信性与偏差分析报告（DenseNet121）
 
-本文基于TorchXRayVision在CheXpert数据集上的权重进行了10轮微调
-
+使用Torchxrayvision中densenet121-res224-chex预训练权重
 TorchXRayVision文献链接：https://arxiv.org/abs/2111.00595
 
 TorchXRayVision代码仓库：https://github.com/mlmed/torchxrayvision
 
-```bash
-python Train_CheXpert.py
-```
+项目log信息见./run_log/
+
 
 ## 交付物 1：分层公平性分析详细报告
 
 ```bash
-python Task_1_Fairness_Analysis.py
+python run_sh/nohup_task_1.sh
 ```
 
 ## 1. 概述
@@ -94,7 +92,7 @@ python Task_1_Fairness_Analysis.py
 
 ## 交付物 2：不确定性与解释可信度分析报告 (Atelectasis )
 ```bash
-python Task_2_Uncertainty_Analysis.py
+python run_sh/nohup_task_2.sh
 ```
 
 ## 2.1 定量分析：模型失效的统计学证据
@@ -167,7 +165,7 @@ python Task_2_Uncertainty_Analysis.py
 
 ## 交付物 3：不确定性驱动的偏差与鲁棒性分析报告
 ```bash
-python Task_3_Bias_Uncertainty_Analysis.py
+python run_sh/nohup_task_3.sh
 ```
 
 ## 3.1 核心发现：不确定性与偏差分布
