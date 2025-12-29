@@ -1,0 +1,71 @@
+正在构建数据集路径... (Data Dir: CheXpert-v1.0-small)
+路径示例: CheXpert-v1.0-small/CheXpert-v1.0-small/valid/patient64541/study1/view1_frontal.jpg
+正在加载 torchxrayvision 预训练模型 (densenet121-res224-chex)...
+XRV 模型加载完毕。模型支持的病理: ['Atelectasis', 'Consolidation', '', 'Pneumothorax', 'Edema', '', '', 'Effusion', 'Pneumonia', '', 'Cardiomegaly', '', '', '', 'Lung Lesion', 'Fracture', 'Lung Opacity', 'Enlarged Cardiomediastinum']
+
+--- 类别索引映射 ---
+Mapping 'Cardiomegaly' -> Index 10
+Mapping 'Edema' -> Index 4
+Mapping 'Consolidation' -> Index 1
+Mapping 'Atelectasis' -> Index 0
+Mapping 'Pleural Effusion' (via 'Effusion') -> Index 7
+
+在 cuda 上运行评估...
+已完成对 234 个样本的预测。
+
+Task-1
+--- 1. 分层性能计算 [cite: 18] ---
+--- 正在分析病症: Cardiomegaly ---
+  Group: all             | N=234   | AUC: 0.8112 | F1: 0.4503
+  Group: gender_male     | N=128   | AUC: 0.8242 | F1: 0.4485
+  Group: gender_female   | N=106   | AUC: 0.7935 | F1: 0.4526
+  Group: age_<=40        | N=34    | AUC: 0.7692 | F1: 0.3810
+  Group: age_41-65       | N=99    | AUC: 0.8295 | F1: 0.3770
+  Group: age_>65         | N=101   | AUC: 0.8041 | F1: 0.5362
+--- 正在分析病症: Edema ---
+  Group: all             | N=234   | AUC: 0.8165 | F1: 0.3226
+  Group: gender_male     | N=128   | AUC: 0.8273 | F1: 0.3158
+  Group: gender_female   | N=106   | AUC: 0.8062 | F1: 0.3307
+  Group: age_<=40        | N=34    | AUC: 0.9762 | F1: 0.3000
+  Group: age_41-65       | N=99    | AUC: 0.7723 | F1: 0.2478
+  Group: age_>65         | N=101   | AUC: 0.7847 | F1: 0.3968
+--- 正在分析病症: Consolidation ---
+  Group: all             | N=234   | AUC: 0.8518 | F1: 0.2472
+  Group: gender_male     | N=128   | AUC: 0.9030 | F1: 0.1844
+  Group: gender_female   | N=106   | AUC: 0.8052 | F1: 0.3175
+  Group: age_<=40        | N=34    | AUC: 0.8552 | F1: 0.2564
+  Group: age_41-65       | N=99    | AUC: 0.8697 | F1: 0.1835
+  Group: age_>65         | N=101   | AUC: 0.8373 | F1: 0.3025
+--- 正在分析病症: Atelectasis ---
+  Group: all             | N=234   | AUC: 0.7993 | F1: 0.5096
+  Group: gender_male     | N=128   | AUC: 0.8019 | F1: 0.5029
+  Group: gender_female   | N=106   | AUC: 0.7995 | F1: 0.5175
+  Group: age_<=40        | N=34    | AUC: 0.7833 | F1: 0.2105
+  Group: age_41-65       | N=99    | AUC: 0.8053 | F1: 0.5000
+  Group: age_>65         | N=101   | AUC: 0.7711 | F1: 0.5972
+--- 正在分析病症: Pleural Effusion ---
+  Group: all             | N=234   | AUC: 0.8025 | F1: 0.4452
+  Group: gender_male     | N=128   | AUC: 0.7715 | F1: 0.3377
+  Group: gender_female   | N=106   | AUC: 0.8266 | F1: 0.5578
+  Group: age_<=40        | N=34    | AUC: 0.8069 | F1: 0.2564
+  Group: age_41-65       | N=99    | AUC: 0.8489 | F1: 0.3636
+  Group: age_>65         | N=101   | AUC: 0.7594 | F1: 0.5674
+
+--- 2. 性能差异计算 [cite: 21] ---
+--- Cardiomegaly 的差异 (Delta) ---
+  性别差异 (Male vs Female): ΔAUC = 0.0306, ΔF1 = 0.0041
+  年龄差异 (<=40 vs >65): ΔAUC = 0.0348, ΔF1 = 0.1553
+--- Edema 的差异 (Delta) ---
+  性别差异 (Male vs Female): ΔAUC = 0.0212, ΔF1 = 0.0149
+  年龄差异 (<=40 vs >65): ΔAUC = 0.1915, ΔF1 = 0.0968
+--- Consolidation 的差异 (Delta) ---
+  性别差异 (Male vs Female): ΔAUC = 0.0978, ΔF1 = 0.1331
+  年龄差异 (<=40 vs >65): ΔAUC = 0.0178, ΔF1 = 0.0461
+--- Atelectasis 的差异 (Delta) ---
+  性别差异 (Male vs Female): ΔAUC = 0.0025, ΔF1 = 0.0146
+  年龄差异 (<=40 vs >65): ΔAUC = 0.0123, ΔF1 = 0.3867
+--- Pleural Effusion 的差异 (Delta) ---
+  性别差异 (Male vs Female): ΔAUC = 0.0551, ΔF1 = 0.2202
+  年龄差异 (<=40 vs >65): ΔAUC = 0.0475, ΔF1 = 0.3110
+
+任务1 分析完成。

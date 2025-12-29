@@ -1,0 +1,26 @@
+正在构建数据集路径... (Data Dir: CheXpert-v1.0-small)
+路径示例 (应为双层): CheXpert-v1.0-small/CheXpert-v1.0-small/valid/patient64541/study1/view1_frontal.jpg
+正在加载 torchxrayvision 模型...
+
+[Sanity Check] 检查模型输入数据分布...
+Min Value: -1024.00 (应接近 -1024)
+Max Value: 1024.00 (应接近 1024)
+数据范围正常，继续分析...
+------------------------------
+分析目标: 'Atelectasis' (Mapped to 'Atelectasis', Index: 0)
+开始分析... (Batch Size: 16)
+
+========== 任务2 分析结果 (修复后) ==========
+目标病症: Atelectasis
+有效样本数: 234
+------------------------------
+1. 不确定性 (Entropy): Mean=0.9225, Std=0.0437
+2. 解释分散性 (Variance): Mean=0.0031, Std=0.0127
+------------------------------
+3. 相关性分析:
+   皮尔逊 (Pearson): -0.0478 (p=0.4670)
+   斯皮尔曼 (Spearman): -0.0823 (p=0.2099)
+====================================
+
+正在生成 Top-5 高不确定性样本可视化...
+Top-5 汇总大图已保存。
